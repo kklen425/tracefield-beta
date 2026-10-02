@@ -1,4 +1,5 @@
 import type { C2paValidation } from "./types";
+import {inferValidationState} from './c2pa-state';
 
 import wasmSrc from '@contentauth/c2pa-web/resources/c2pa.wasm?url';
 
@@ -33,7 +34,7 @@ async function getC2pa(mod: C2paModule): Promise<unknown> {
 /**
  * Read and validate open C2PA / Content Credentials locally in the browser.
  * The file bytes are passed to the CAI WebAssembly reader; they are not sent to
- * TRACEFIELD's server. If the SDK CDN is unavailable, the caller can still run
+ * TRACEFIELD's server. If the locally bundled SDK is unavailable, the caller can still run
  * the rest of the local evidence scan and this function reports that the
  * validator was unavailable instead of pretending that no manifest exists.
  */
@@ -57,7 +58,8 @@ export async function validateC2pa(file: File): Promise<C2paValidation> {
       const rawText = safeStringify(store);
       const activeText = safeStringify(active);
       const combined = `${rawText}\n${activeText}`.slice(0, 600_000);
-      const present = hasManifest(store, combined);
+      const present = hasManifest(store);
+      const manifest=active as {claim_generator?:string,signature_info?:{issuer?:string}}|null;
 
       return {
         checked: true,
@@ -67,12 +69,8 @@ export async function validateC2pa(file: File): Promise<C2paValidation> {
         activeManifest:
           pickString(store, ["active_manifest", "activeManifest", "active_manifest_label"]) ??
           pickString(active, ["label", "instance_id", "title"]),
-        claimGenerator:
-          pickString(active, ["claim_generator", "claimGenerator"]) ??
-          pickFromText(combined, /(?:claim_generator|claimGenerator)["'\s:=-]+([^"'\n,}]{2,160})/i),
-        issuer:
-          pickString(active, ["issuer", "organization", "common_name"]) ??
-          pickFromText(combined, /(?:issuer|organization|common_name)["'\s:=-]+([^"'\n,}]{2,160})/i),
+        claimGenerator: manifest?.claim_generator?.slice(0,200)??null,
+        issuer: manifest?.signature_info?.issuer?.slice(0,200)??null,
         rawText: combined,
       };
     } finally {
@@ -116,19 +114,9 @@ function safeStringify(value: unknown): string {
   }
 }
 
-function hasManifest(store: unknown, raw: string): boolean {
+function hasManifest(store: unknown): boolean {
   if (!store) return false;
   return Boolean((store as {active_manifest?:unknown}).active_manifest);
-}
-
-export function inferValidationState(store:unknown,present:boolean):C2paValidation['validationState'] {
- if(!present) return 'not-present';
- if(!store||typeof store!=='object')return 'unknown';
- const value=(store as Record<string,unknown>).validation_state;
- if(value==='Trusted')return 'trusted';
- if(value==='Valid')return 'valid';
- if(value==='Invalid')return 'invalid';
- return 'unknown';
 }
 
 function pickString(value: unknown, keys: string[]): string | null {

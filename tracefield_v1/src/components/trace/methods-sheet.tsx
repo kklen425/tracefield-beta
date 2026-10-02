@@ -37,16 +37,14 @@ export function MethodsSheet({ open, onClose }: { open: boolean; onClose: () => 
             <h3 className="mb-1 font-medium text-fg">3 · Pixel analysis stays clearly heuristic</h3>
             <p>
               Raster images also get a local frequency-field pass. Repeated spectral structure can be useful forensic
-              context, but TRACEFIELD does not label that signal as SynthID or another proprietary watermark unless a
-              direct provider signal supports the attribution. Official watermark verification remains provider-specific.
+              context. TRACEFIELD never treats these heuristics or an editable SynthID tag as official hidden watermark verification.
             </p>
           </section>
           <section>
             <h3 className="mb-1 font-medium text-fg">4 · Multi-format support</h3>
             <p>
-              Deep image analysis currently targets JPEG, PNG, WebP, GIF and AVIF. PDF plus several video/audio
-              containers can be checked for file-level provenance and Content Credentials. Media-specific signal
-              analysis is being added incrementally rather than pretending every format uses the same detector.
+              IMAGE supports JPEG, PNG and WebP. TEXT uses experimental English style analysis with low confidence.
+              PDF extracts selectable text and editable metadata locally; scanned PDF OCR is planned for Phase 2.
             </p>
           </section>
           <section>

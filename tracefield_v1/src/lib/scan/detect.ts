@@ -101,7 +101,7 @@ export async function scanImage(
         family: "C2PA",
         title: "JPEG Content Credentials (APP11 / JUMBF)",
         detail:
-          "JPEG APP11 carries a JUMBF C2PA manifest. Original DALL·E 3, Firefly, and some Gemini downloads use this.",
+          "JPEG APP11 contains a C2PA/JUMBF marker. This observation alone does not validate a signature or identify a provider.",
         evidence: segs
           .filter((s) => s.marker === 0xeb)
           .map((s) => `${s.name} ${s.length}b`)

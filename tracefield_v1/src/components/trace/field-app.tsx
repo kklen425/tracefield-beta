@@ -464,7 +464,7 @@ function IdentifyBlock({
             <summary>Content Credentials · {report.c2pa?.validatorAvailable ? report.c2pa.validationState : 'validator unavailable'}</summary>
             <p className="mt-2">Embedded manifest: {report.c2pa?.present ? 'present' : report.c2pa?.validatorAvailable ? 'not found' : 'unknown'}. Container marker: {report.c2paPresent ? 'observed' : 'not observed'}. Markers alone are not signature validation.</p>
             <p>Claim generator: {report.c2pa?.claimGenerator ?? 'not supplied'} · Signer: {report.c2pa?.issuer ?? 'not supplied'}</p>
-            <p>SDK validation is separate from editable metadata and heuristic source ranking. Remote manifest and OCSP fetching are disabled; remote-only credentials and revocation state are not verified.</p>
+            <p>Valid means the SDK accepted the local signature and hashes; only Trusted indicates signer trust. Review validation errors below, including untrusted certificates. SDK validation is separate from editable metadata and heuristic source ranking. Remote manifest and OCSP fetching are disabled; remote-only credentials and revocation state are not verified.</p>
             <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap">{report.c2pa?.rawText || 'No embedded assertions / ingredients available.'}</pre>
           </details>
           <ul className="divide-y divide-border rounded-lg bg-bg-elevated shadow-[var(--shadow-border)]">

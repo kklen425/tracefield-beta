@@ -1,11 +1,9 @@
-# TRACEFIELD current state before Codex pass
+# Current beta state — October 2026
 
-- Full source is present in this folder.
-- Original visual reference is under `reference/`.
-- Existing code still contains legacy Creator/Studio pricing and plan names.
-- Existing image scanner already has modules for attribution, metadata, PNG/JPEG parsing, FFT/frequency analysis and C2PA-related evidence.
-- Existing server code includes Better Auth, Stripe Checkout/webhook, Neon/Postgres and server-side entitlements/usage counters.
-- Neon schema was previously migrated successfully in project `solitary-block-23171424` / database `neondb`.
-- Prior public hosting attempts were unreliable because a Neon Function was incorrectly used as frontend and an old Vercel deployment disappeared.
-- Render and GitHub connectors were later connected, but this handoff should let Codex choose the cheapest correct deployment architecture for the full-stack product.
-- Current target pricing and features are defined only in `CODEX_HANDOFF.md`.
+Public service: https://tracefield-beta.onrender.com. Public source: kklen425/tracefield-beta, codex/tracefield-beta.
+
+Free: five completed analyses per UTC calendar month. Plus: HK$10/month in Stripe sandbox, 300 analyses. Original inputs are processed locally. Existing Neon supplies authentication, authoritative quotas, subscription status and opt-in summary storage.
+
+Image provenance uses the official C2PA reader, editable metadata and separate frequency heuristics. Text analysis is experimental and uncalibrated. PDF supports selectable text and metadata; OCR and signature validation are deferred. Clean re-encodes ordinary metadata and does not defeat proprietary watermarks.
+
+See docs/QA.md for actual tests and remaining verification, docs/DEPLOYMENT.md for operating details, and README.md for setup.

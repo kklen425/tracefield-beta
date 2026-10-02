@@ -16,6 +16,11 @@ async function stripePost(path:string,form:URLSearchParams) {
 export const createCheckoutSession=createServerFn({method:'POST'}).validator((plan:PaidPlan)=>{if(plan!=='plus') throw new Error('Invalid plan');return plan;}).middleware([authMiddleware]).handler(async ({context})=>{
  testSecret();
  const origin=process.env.TRACEFIELD_APP_URL ?? 'http://localhost:8080';
+ const sql=await getSql();
+ const existing=await sql<{stripe_customer_id:string,status:string}>`select stripe_customer_id, status from tracefield_subscriptions where user_id=${context.userId}`;
+ if(existing[0]?.stripe_customer_id && !['inactive','canceled','incomplete_expired'].includes(existing[0].status)) {
+  return stripePost('billing_portal/sessions',new URLSearchParams({customer:existing[0].stripe_customer_id,return_url:origin}));
+ }
  const form=new URLSearchParams({mode:'subscription',client_reference_id:context.userId,success_url:`${origin}/?checkout=success`,cancel_url:`${origin}/?checkout=cancelled`});
  const price=process.env.STRIPE_PLUS_MONTHLY_PRICE_ID;
  if(price) form.set('line_items[0][price]',price);

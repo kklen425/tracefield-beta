@@ -14,7 +14,7 @@ export async function scanArtifact(
   onProgress?: (p: ScanProgress) => void,
 ): Promise<ScanReport> {
   if (file.size > MAX_LOCAL_SCAN_BYTES) {
-    throw new Error("This beta scans files up to 160 MB locally. Large video support is coming next.");
+    throw new Error("This beta scans images up to 160 MB locally.");
   }
   if (isRasterImage(file)) {
     const base = await scanImage(file, (p) => onProgress?.({ ...p, pct: Math.min(88, p.pct * 0.88) }));

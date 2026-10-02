@@ -15,3 +15,7 @@
 **/scripts/finalize-beta.mjs
 **/scripts/create-repository.mjs
 **/scripts/publish-repository.mjs
+
+scripts/finish-ui.mjs
+scripts/report-identifier.mjs
+scripts/extract-webhook-test.mjs

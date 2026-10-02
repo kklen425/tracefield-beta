@@ -1,5 +1,7 @@
 # TRACEFIELD
 
+Public beta: https://tracefield-beta.onrender.com · Source: https://github.com/kklen425/tracefield-beta/tree/codex/tracefield-beta
+
 Identify what made it. See the evidence. Clean what you share.
 
 Dark, local-first image, text and PDF evidence workspace. React 19 / TanStack Start / Nitro Node server, Better Auth email/password, existing Neon Postgres, Stripe **test mode only**. No paid AI API is required.

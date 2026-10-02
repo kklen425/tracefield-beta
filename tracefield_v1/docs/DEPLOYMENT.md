@@ -16,4 +16,4 @@ Billing remains test-only and fails closed without STRIPE_SECRET_KEY beginning s
 
 Expected fixed infrastructure cost: HK$0/month while within Render and Neon free allowances. No paid inference APIs. Stripe test payments cost nothing; eventual live processing fees and free-tier overages are separate. Review [Render free limits](https://render.com/docs/free) and [Neon pricing](https://neon.com/pricing) before expanding traffic.
 
-Release validation status and unverified cases are recorded in QA.md. A test checkout is not complete until an actual Stripe test key is supplied and the public webhook flow is exercised.
+Release validation status and unverified cases are recorded in QA.md. Hosted Stripe sandbox checkout, signed webhook replay, payment failure, entitlement revocation and cancellation were exercised successfully. Live billing remains disabled.

@@ -199,7 +199,7 @@ export function FieldApp() {
               <span className="h-8 w-20 animate-pulse rounded-md bg-bg-subtle" />
             ) : user ? (
               <div className="flex max-w-48 flex-wrap items-center justify-end gap-2">
-                <PlanBadge entitlement={entitlement} />{entitlement.active&&<Button size="sm" variant="ghost" onClick={()=>void createBillingPortal().then(r=>window.location.assign(r.url)).catch(e=>setWorkspaceNote(String(e)))}>Billing</Button>}
+                <PlanBadge entitlement={entitlement} />{entitlement.status!=='inactive'&&<Button size="sm" variant="ghost" onClick={()=>void createBillingPortal().then(r=>window.location.assign(r.url)).catch(e=>setWorkspaceNote(String(e)))}>Billing</Button>}
                 <UserButton />
               </div>
             ) : (
@@ -254,7 +254,7 @@ export function FieldApp() {
           ) : null}
           <p className="flex items-center gap-2 text-xs leading-relaxed text-subtle">
             <Shield className="size-3.5 shrink-0" />
-            The scanner reads the file locally. Only scan summaries you explicitly save are sent to your account workspace.
+            The scanner reads the file locally. Sample buttons generate synthetic tagged demos. Only summaries you explicitly save are sent to your account workspace.
           </p>
         </section>
 
@@ -725,7 +725,7 @@ function toSummary(report: ScanReport): ScanSummaryInput {
       source: labName(hit.lab),
       family: hit.family,
       confidence: hit.confidence,
-      evidence: hit.evidence,
+      evidence: `${hit.detail} Observed: ${hit.evidence}`,
     })),
   };
 }

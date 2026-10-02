@@ -1,0 +1,16 @@
+**/node_modules/
+**/.npm-cache/
+**/.env*
+!**/.env.example
+**/.output/
+**/.vercel/
+**/.tanstack/
+**/dist/
+**/qa-output/
+**/.grok/
+**/reference/*.zip
+**/scripts/update-beta-ui.mjs
+**/scripts/stabilize-beta.mjs
+**/scripts/prepare-local-production.mjs
+**/scripts/finalize-beta.mjs
+**/scripts/create-repository.mjs

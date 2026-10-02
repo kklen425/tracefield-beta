@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: tracefield-beta
+    runtime: node
+    plan: free
+    region: ohio
+    rootDir: tracefield_v1
+    buildCommand: npm ci && npm run build && npm run db:migrate
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      - key: BETTER_AUTH_URL
+        sync: false
+      - key: TRACEFIELD_APP_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false

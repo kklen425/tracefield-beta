@@ -19,3 +19,7 @@
 scripts/finish-ui.mjs
 scripts/report-identifier.mjs
 scripts/extract-webhook-test.mjs
+
+**/scripts/finish-ui.mjs
+**/scripts/report-identifier.mjs
+**/scripts/extract-webhook-test.mjs

@@ -11,6 +11,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 24.14.0
+      - key: NPM_CONFIG_INCLUDE
+        value: dev
       - key: HOST
         value: 0.0.0.0
       - key: DATABASE_URL

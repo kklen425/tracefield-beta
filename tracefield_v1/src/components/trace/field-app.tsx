@@ -185,14 +185,14 @@ export function FieldApp() {
   return (
     <div className="min-h-dvh bg-bg text-fg">
       <header className="sticky top-0 z-20 border-b border-border bg-bg/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-baseline gap-3">
             <span className="font-display text-2xl tracking-tight">TRACEFIELD</span>
             <span className="hidden font-mono text-xs uppercase tracking-widest text-subtle md:inline">
               AI source attribution · local-first
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <a href="#pricing" className={buttonVariants({ variant: "ghost", size: "sm" })}>Pricing</a>
             <Button variant="ghost" size="sm" onClick={() => setMethods(true)}>Methods</Button>
             {userPending ? (

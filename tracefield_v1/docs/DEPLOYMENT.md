@@ -1,12 +1,14 @@
 # Beta deployment
 
-Dedicated private repository: https://github.com/kklen425/tracefield-beta
+Dedicated public repository (owner-approved): https://github.com/kklen425/tracefield-beta
 
 Target: Ka kin's workspace, free Render Node web service, Ohio; existing Neon Postgres project. The root render.yaml contains a reproducible configuration. Free Render instances sleep after inactivity; cold starts and free allowances are appropriate for a beta, not an availability guarantee.
 
 Build: `cd tracefield_v1 && npm ci && npm run build && npm run db:migrate`
 
 Start: `cd tracefield_v1 && npm start`
+
+Set NPM_CONFIG_INCLUDE=dev so Render's production environment installs the build tools. A public Git URL without a connected GitHub installation may need manual deployment triggers even when the service reports auto-deploy enabled; confirm the deployed commit in Render after each push.
 
 Set DATABASE_URL, BETTER_AUTH_SECRET (random strong secret), BETTER_AUTH_URL and TRACEFIELD_APP_URL (the assigned HTTPS service origin). Set NODE_ENV=production, HOST=0.0.0.0 and NODE_VERSION=24.14.0. Migrations are idempotent and preserve existing table names. Original files remain local; saved summaries are opt-in.
 

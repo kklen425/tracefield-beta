@@ -22,7 +22,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { MethodsSheet } from "@/components/trace/methods-sheet";
 import { SpectrumView } from "@/components/trace/spectrum-view";
-import { createVerifiedReport, getEntitlement, listScanHistory, saveScanToHistory, type Entitlement, type HistoryItem, type ScanSummaryInput } from "@/lib/account/entitlements";
+import { type Entitlement, type HistoryItem, type ScanSummaryInput } from "@/lib/account/entitlements";
+import {useWorkspaceAccount} from '@/lib/personal/account';
+import {usePersonal} from '@/lib/personal/context';
+import {PersonalHistory} from './personal-history';
 import { createCheckoutSession, type PaidPlan } from "@/lib/billing/checkout";
 import { UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -44,9 +47,10 @@ const FREE_ENTITLEMENT: Entitlement = {
 import { DocumentWorkspace } from './document-workspace';
 import { CleanWorkspace } from './clean-workspace';
 import { BatchWorkspace } from './batch-workspace';
-import { getAnalysisUsage, consumeAnalysis } from '@/lib/account/entitlements';
 import { createBillingPortal } from '@/lib/billing/checkout';
 export function FieldApp() {
+  const personal=usePersonal();
+  const {getEntitlement,getAnalysisUsage,consumeAnalysis,listScanHistory,saveScanToHistory,createVerifiedReport}=useWorkspaceAccount();
   const [mode,setMode] = useState<'IMAGE'|'TEXT'|'PDF'>('IMAGE');
   const [usage,setUsage] = useState<{used:number,limit:number}|null>(null);
   const scanSequence=useRef(0);
@@ -158,7 +162,7 @@ export function FieldApp() {
     setWorkspaceNote(null);
     try {
       await saveScanToHistory({ data: toSummary(report) });
-      setWorkspaceNote("Saved to your private scan history. The original file was not uploaded.");
+      setWorkspaceNote(personal?'Saved in this browser. The original file was not uploaded.':"Saved to your private scan history. The original file was not uploaded.");
       setHistory(await listScanHistory());
     } catch (cause) {
       setWorkspaceNote(friendlyProError(cause));
@@ -174,7 +178,7 @@ export function FieldApp() {
     try {
       const created = await createVerifiedReport({ data: toSummary(report) });
       setVerifiedReportId(created.id);
-      setWorkspaceNote("Created a server-backed scan receipt from this locally generated summary and file hash.");
+      setWorkspaceNote(personal?'Saved a local report. Open it in Personal history below, or export it to share.':"Created a server-backed scan receipt from this locally generated summary and file hash.");
     } catch (cause) {
       setWorkspaceNote(friendlyProError(cause));
     } finally {
@@ -193,9 +197,9 @@ export function FieldApp() {
             </span>
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <a href="#pricing" className={buttonVariants({ variant: "ghost", size: "sm" })}>Pricing</a>
+            {!personal&&<a href="#pricing" className={buttonVariants({ variant: "ghost", size: "sm" })}>Pricing</a>}
             <Button variant="ghost" size="sm" onClick={() => setMethods(true)}>Methods</Button>
-            {userPending ? (
+            {personal ? <Badge tone="ok">Personal · all tools unlocked</Badge> : userPending ? (
               <span className="h-8 w-20 animate-pulse rounded-md bg-bg-subtle" />
             ) : user ? (
               <div className="flex max-w-48 flex-wrap items-center justify-end gap-2">
@@ -213,7 +217,7 @@ export function FieldApp() {
 
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 pt-5 sm:px-6" role="tablist" aria-label="Analysis mode">
         {(['IMAGE','TEXT','PDF'] as const).map(value=><Button key={value} role="tab" aria-selected={mode===value} variant={mode===value?'outline':'ghost'} size="sm" disabled={stage==='scanning'} onClick={()=>setMode(value)}>{value}</Button>)}
-        <span className="ml-auto font-mono text-xs text-subtle">{usage?usage.used+' / '+usage.limit+' · UTC month':'Free · 5 jobs / month'}</span>
+        <span className="ml-auto font-mono text-xs text-subtle">{personal?'Unlimited · no sign-in':usage?usage.used+' / '+usage.limit+' · UTC month':'Free · 5 jobs / month'}</span>
       </div>
       {mode !== 'IMAGE' ? <DocumentWorkspace key={mode} mode={mode} onUsage={setUsage}/> : (
 
@@ -254,7 +258,7 @@ export function FieldApp() {
           ) : null}
           <p className="flex items-center gap-2 text-xs leading-relaxed text-subtle">
             <Shield className="size-3.5 shrink-0" />
-            The scanner reads the file locally. Sample buttons generate synthetic tagged demos. Only summaries you explicitly save are sent to your account workspace.
+            {personal?'Personal edition: files, analysis and saved summaries stay in this browser. No account or payment required. Sample buttons generate synthetic tagged demos.':'The scanner reads the file locally. Sample buttons generate synthetic tagged demos. Only summaries you explicitly save are sent to your account workspace.'}
           </p>
         </section>
 
@@ -290,7 +294,7 @@ export function FieldApp() {
           )}
         </section>
       </main>)}
-      <Pricing userSignedIn={Boolean(user)} entitlement={entitlement} busy={accountBusy} onCheckout={beginCheckout} />
+      {personal?<PersonalHistory/>:<Pricing userSignedIn={Boolean(user)} entitlement={entitlement} busy={accountBusy} onCheckout={beginCheckout} />}
       
       <footer className="mx-auto max-w-6xl border-t border-border px-4 py-8 text-xs leading-relaxed text-subtle sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -531,9 +535,10 @@ function ProWorkspace({
   onVerifiedReport: () => Promise<void>;
   onCheckout: (plan: PaidPlan) => Promise<void>;
 }) {
+  const personal=usePersonal();
   return (
     <div>
-      <SectionLabel n="03" title="Plus workspace" />
+      <SectionLabel n="03" title={personal?'Personal workspace':'Plus workspace'} />
       {!report ? <p className="text-sm text-muted">Scan a file before saving a history record or report.</p> : !user ? (
         <div className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">
           <LockKeyhole className="size-5 text-accent" />
@@ -555,9 +560,9 @@ function ProWorkspace({
           <div className="rounded-xl bg-bg-elevated p-5 shadow-[var(--shadow-border)]">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2"><PlanBadge entitlement={entitlement} /><Badge tone="ok">server verified</Badge></div>
+                <div className="flex items-center gap-2">{personal?<Badge tone="ok">Browser-local · unlocked</Badge>:<><PlanBadge entitlement={entitlement} /><Badge tone="ok">server verified</Badge></>}</div>
                 <h3 className="mt-3 text-lg font-semibold text-fg">Save only the evidence you choose.</h3>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">The backend receives the SHA-256 hash, result summary and evidence strings — not the original file.</p>
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">{personal?'History and reports are saved in this browser only. Export reports to keep a portable copy.':'The backend receives the SHA-256 hash, result summary and evidence strings — not the original file.'}</p>
               </div>
               <Shield className="size-5 text-accent" />
             </div>
@@ -569,7 +574,7 @@ function ProWorkspace({
                 {busy ? <LoaderCircle className="animate-spin" /> : <BadgeCheck />} Create scan receipt
               </Button>
             </div>
-            {verifiedReportId ? (
+            {verifiedReportId && !personal ? (
               <Link to="/verify/$reportId" params={{ reportId: verifiedReportId }} className="mt-4 inline-flex items-center gap-2 text-sm text-accent hover:underline">
                 Open scan receipt <ExternalLink className="size-3.5" />
               </Link>

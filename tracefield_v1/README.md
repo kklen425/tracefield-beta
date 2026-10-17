@@ -33,3 +33,6 @@ All computation is distributed to the browser. Raw local files/text are never po
 Required runtime env: DATABASE_URL, BETTER_AUTH_SECRET (random 32+ bytes), BETTER_AUTH_URL and TRACEFIELD_APP_URL (exact public HTTPS origin). Stripe is optional for Free beta, but paid testing requires sk_test_ STRIPE_SECRET_KEY, whsec_ STRIPE_WEBHOOK_SECRET, optional STRIPE_PLUS_MONTHLY_PRICE_ID. Register /api/stripe/webhook for checkout.session.completed and customer.subscription.created/updated/deleted. Enable subscription cancellation in the test Billing Portal.
 
 See docs/QA.md for measured results, docs/OPEN_SOURCE_REVIEW.md for licensing and selection, docs/DEPLOYMENT.md for outstanding access steps. A build passing is not evidence of a publicly verified deployment.
+
+Personal edition: https://tracefield-beta.onrender.com/personal — no sign-in, no billing, unlimited local analyses, browser-local history and downloadable reports. See docs/PERSONAL.md.
+

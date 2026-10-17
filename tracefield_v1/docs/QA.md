@@ -1,5 +1,15 @@
 # TRACEFIELD beta QA — started October 2, 2026
 
+## Personal edition verification — October 17, 2026
+
+Deployed app commit 846d95f at https://tracefield-beta.onrender.com/personal. TypeScript, production build and all 53 product tests passed. The personal adapter test exercises more than 300 jobs with networking forbidden and checks persistent summaries, report integrity hashes and preservation of unreadable browser storage.
+
+Browser checks passed without sign-in: image preview/metadata/frequency/C2PA reader output, ordinary metadata Clean and local re-scan, saved image history and report, text analysis/history, three-page PDF extraction with Page 1-only analysis/history, and a JPEG/WebP batch. Saved summaries persisted after reload. No console errors were observed. Width 390 had document width 375 with no horizontal overflow; desktop 1440 was also checked.
+
+The earlier download verification gap is now resolved for the personal workflow: actual downloaded clean-gemini-sample.png was 575288 bytes and SHA-256 9404a50d16a75c7405c36c533d7209ed6d9224bb0b21db7a9d2e99888a9fce48, exactly matching the Clean result. A downloaded JSON history backup parsed successfully with four saved image/text/PDF records. Browser file chooser operations were unusually slow, but parsing and analysis completed normally.
+
+The personal link is publicly accessible; saved history belongs to this browser profile rather than an authenticated owner. Reports are downloadable local records, not public server receipt URLs. Original commercial account authentication and server quota enforcement are unchanged. Existing detector and format limitations still apply.
+
 Public beta: https://tracefield-beta.onrender.com
 
 Repository: https://github.com/kklen425/tracefield-beta — codex/tracefield-beta. Public source access was owner-approved. Secrets and local fixtures are excluded from Git.

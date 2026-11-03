@@ -51,7 +51,7 @@ import { createBillingPortal } from '@/lib/billing/checkout';
 export function FieldApp() {
   const personal=usePersonal();
   const {getEntitlement,getAnalysisUsage,consumeAnalysis,listScanHistory,saveScanToHistory,createVerifiedReport}=useWorkspaceAccount();
-  const [mode,setMode] = useState<'IMAGE'|'TEXT'|'PDF'>('IMAGE');
+  const [mode,setMode] = useState<'IMAGE'|'TEXT'|'WORD'|'PDF'>('IMAGE');
   const [usage,setUsage] = useState<{used:number,limit:number}|null>(null);
   const scanSequence=useRef(0);
   const [file, setFile] = useState<File | null>(null);
@@ -216,7 +216,7 @@ export function FieldApp() {
       </header>
 
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 pt-5 sm:px-6" role="tablist" aria-label="Analysis mode">
-        {(['IMAGE','TEXT','PDF'] as const).map(value=><Button key={value} role="tab" aria-selected={mode===value} variant={mode===value?'outline':'ghost'} size="sm" disabled={stage==='scanning'} onClick={()=>setMode(value)}>{value}</Button>)}
+        {(['IMAGE','TEXT','WORD','PDF'] as const).map(value=><Button key={value} role="tab" aria-selected={mode===value} variant={mode===value?'outline':'ghost'} size="sm" disabled={stage==='scanning'} onClick={()=>setMode(value)}>{value}</Button>)}
         <span className="ml-auto font-mono text-xs text-subtle">{personal?'Unlimited · no sign-in':usage?usage.used+' / '+usage.limit+' · UTC month':'Free · 5 jobs / month'}</span>
       </div>
       {mode !== 'IMAGE' ? <DocumentWorkspace key={mode} mode={mode} onUsage={setUsage}/> : (

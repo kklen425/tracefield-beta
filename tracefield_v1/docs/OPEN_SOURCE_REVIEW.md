@@ -1,5 +1,7 @@
 # Open-source review — 2026-10-02
 
+Update 2026-11-03: see [AI_TEXT_MODELS.md](AI_TEXT_MODELS.md) for the Fakespot/Transformers.js model decision, diagnostic false positives, Mammoth BSD-2-Clause Word support and Turnitin report import. The older "no classifier installed" statement below describes the October release, not the new optional experimental model. Runtime licence notices are retained under public/licenses.
+
 Upstream repositories, READMEs, licenses and installed package metadata were inspected before integration. No code was copied from the two research detector repositories. All integrated libraries below are npm-installed; attribution/license files remain in their packages. Commercial distribution must retain the applicable copyright, license and NOTICE files. DEPENDENCY_INVENTORY.md inventories all inherited direct scaffold dependencies as well.
 
 | Repository / package | Purpose, license and inclusion | Selection / alternatives | Maintenance, security, browser size |

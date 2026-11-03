@@ -36,3 +36,6 @@ See docs/QA.md for measured results, docs/OPEN_SOURCE_REVIEW.md for licensing an
 
 Personal edition: https://tracefield-beta.onrender.com/personal — no sign-in, no billing, unlimited local analyses, browser-local history and downloadable reports. See docs/PERSONAL.md.
 
+
+AI model scores, Word DOCX extraction and local Turnitin AI-report import: see docs/AI_TEXT_MODELS.md. The percentage is experimental classifier output, not a calibrated authorship fraction or Turnitin prediction.
+

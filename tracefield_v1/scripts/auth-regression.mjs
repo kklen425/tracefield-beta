@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+const origin='https://tracefield-beta.onrender.com';
+const email=`qa-writing-${Date.now()}@tracefield.test`;const password=crypto.randomUUID()+'-qa';
+const signup=await fetch(origin+'/api/auth/sign-up/email',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({email,password,name:'Writing tools QA'})});
+assert.equal(signup.ok,true,`Signup status ${signup.status}`);
+const cookie=signup.headers.getSetCookie().map(s=>s.split(';')[0]).filter(s=>s.startsWith('__Host-tracefield.session_token=')).join('; ');
+assert.ok(cookie);
+const session=await fetch(origin+'/api/auth/get-session',{headers:{Cookie:cookie}});assert.equal((await session.json()).user.email,email);
+const signout=await fetch(origin+'/api/auth/sign-out',{method:'POST',headers:{Cookie:cookie,Origin:origin,'Content-Type':'application/json'},body:'{}'});assert.equal(signout.ok,true);
+const revoked=await fetch(origin+'/api/auth/get-session',{headers:{Cookie:cookie}});assert.equal(await revoked.json(),null);
+console.log('PASS: public signup, persistent authenticated session, sign-out and server session revocation. Disposable QA identity only; no credentials logged.');

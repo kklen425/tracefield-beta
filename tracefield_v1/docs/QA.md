@@ -1,5 +1,15 @@
 # TRACEFIELD beta QA — started October 2, 2026
 
+## Writing model / Word / Turnitin import — November 3, 2026
+
+Application commit fb8f90c is live at the existing personal URL. TypeScript, production build and **55 product tests** passed. Real browser WASM inference completed for pasted text, an extracted 155-word DOCX and a selectable-text PDF, with no console errors. The 12-word input refused a model percentage and succeeded with Quick style analysis. Word summary saving worked in local history. The downloaded Word JSON report parsed with analysisType WORD, source writing.docx, a 64-character analyzed-text hash, the pinned model identity, window count and actual model score (99.99368786811829 for the generated fixture).
+
+Turnitin import passed both pasted-header and PDF paths using an explicitly synthetic, unauthentic QA fixture: 37% detected as AI remained separate from 12% similarity, the PDF SHA-256 was displayed, an asterisk remained suppressed/unknown, and a similarity-only report was rejected. This is parsing, not a Turnitin submission or authenticity check. No real Turnitin account/report was supplied.
+
+Desktop 1440 and mobile 390 layouts were checked; mobile document width was 375 (scrollbar) without horizontal overflow. Public signup, persistent session, sign-out and server session revocation passed after the Better Auth security update. No new database migration was required. New dependencies and compatible updates removed the high/critical npm advisories; 14 moderate advisories remain, primarily inherited development tooling.
+
+The five-case model diagnostic is documented in AI_TEXT_MODELS.md and exposes serious false positives: both historical human excerpts scored above 80% AI. These tests establish functioning inference, not detector accuracy or calibration. Every model result discloses this limitation. No Turnitin-equivalence or measured AI-authorship fraction is claimed.
+
 ## Personal edition verification — October 17, 2026
 
 Deployed app commit 846d95f at https://tracefield-beta.onrender.com/personal. TypeScript, production build and all 53 product tests passed. The personal adapter test exercises more than 300 jobs with networking forbidden and checks persistent summaries, report integrity hashes and preservation of unreadable browser storage.

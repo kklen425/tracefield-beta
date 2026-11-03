@@ -1,5 +1,13 @@
 # TRACEFIELD beta QA — started October 2, 2026
 
+## Local revision and translation — November 3, 2026
+
+Application commit 86b50cb is live. TypeScript, production build and **57 product tests** passed. No OpenAI key was created or used. The local Node smoke script downloaded and ran the pinned OPUS-MT pair; the actual browser also completed English → Hong Kong Traditional Chinese → English with editable output and preserved paragraph breaks. The raw translation changed a team to a Panel and shifted a present trial into the past. Quality flags detected both; the final default meaning-protection path visibly substituted the conservative English edit while retaining the raw back-translation for inspection.
+
+Real browser comparison on the 58-word diagnostic fixture displayed **97.0% original → 67.0% revised (-30.0 percentage points)** for the conservative edit. The Node backend produced different quantized scores (98.0811% → 80.1094%); these are platform-dependent diagnostic outputs, not calibrated authorship probabilities, an accuracy benchmark or a promise about other writing/Turnitin.
+
+Applying the draft matched the English pane exactly and reset the analyzer to 51 revised words. The saved tracefield-revised-english.txt was independently read: 327 characters, retaining 24 sensors, 2026, negation and the blank paragraph separator. The browser download API was slow but returned the actual saved path. The source document itself was not modified. Mobile innerWidth 390 / documentWidth 375 showed no horizontal overflow; desktop 1440 was also checked. Browser console had no critical errors. Expected Marian tokenizer compatibility warnings remain a model limitation.
+
 ## Writing model / Word / Turnitin import — November 3, 2026
 
 Application commit fb8f90c is live at the existing personal URL. TypeScript, production build and **55 product tests** passed. Real browser WASM inference completed for pasted text, an extracted 155-word DOCX and a selectable-text PDF, with no console errors. The 12-word input refused a model percentage and succeeded with Quick style analysis. Word summary saving worked in local history. The downloaded Word JSON report parsed with analysisType WORD, source writing.docx, a 64-character analyzed-text hash, the pinned model identity, window count and actual model score (99.99368786811829 for the generated fixture).

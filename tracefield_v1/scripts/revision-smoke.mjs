@@ -1,0 +1,7 @@
+import {env} from '@huggingface/transformers';import {roundTrip} from '../src/lib/scan/local-translation.ts';import {revisionQuality,clearerEnglish} from '../src/lib/scan/revision-quality.ts';import {analyzeWithModel} from '../src/lib/scan/text-model.ts';import {writeFileSync} from 'node:fs';
+env.cacheDir='./.model-cache';
+const source='It is important to note that the project will use 24 sensors in Hong Kong. The trial starts in 2026 and will not collect personal data.\n\nFurthermore, the team will utilize the results to improve energy efficiency. The report explains the methods, findings and limitations in clear English. The evaluation will consider accuracy, reliability and long-term maintenance costs.';
+const started=Date.now();const result=await roundTrip(source,message=>{if(!message.startsWith('Translation model'))console.log(message);});
+const output={source,...result,quality:revisionQuality(source,result.english),clearer:clearerEnglish(source),milliseconds:Date.now()-started};
+if(process.argv.includes('--scores')){output.scores={};for(const [label,text] of Object.entries({original:source,clearer:output.clearer,roundtrip:result.english})){try{output.scores[label]=(await analyzeWithModel(text,()=>{})).model.scorePercent;}catch(e){output.scores[label]=String(e);}}}
+writeFileSync('qa-output/revision-smoke.json',JSON.stringify(output,null,2));console.log(JSON.stringify(output,null,2));

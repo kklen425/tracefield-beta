@@ -39,3 +39,6 @@ Personal edition: https://tracefield-beta.onrender.com/personal — no sign-in, 
 
 AI model scores, Word DOCX extraction and local Turnitin AI-report import: see docs/AI_TEXT_MODELS.md. The percentage is experimental classifier output, not a calibrated authorship fraction or Turnitin prediction.
 
+
+Personal Translate & revise: local English ↔ Hong Kong Traditional Chinese, conservative plain-English editing and measured before/after model scores. No API key or OpenAI. See docs/LOCAL_REVISION.md for licences, actual diagnostic results and limitations.
+

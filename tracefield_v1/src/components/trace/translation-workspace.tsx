@@ -1,0 +1,49 @@
+import {useEffect,useMemo,useRef,useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {clearerEnglish,revisionQuality,validateRevisionInput} from '@/lib/scan/revision-quality';
+import type {TranslationAction} from '@/lib/scan/local-translation';
+import {downloadBlob,downloadJson} from './export';
+
+type Comparison={before:number,after:number,model:string};
+type RevisionOutput={chinese?:string,english?:string,comparison?:Comparison};
+export function TranslationWorkspace({source,disabled,onApply,onBusyChange}:{source:string,disabled:boolean,onApply:(text:string)=>void,onBusyChange:(busy:boolean)=>void}){
+ const [snapshot,setSnapshot]=useState('');const [chinese,setChinese]=useState('');const [english,setEnglish]=useState('');const [comparison,setComparison]=useState<Comparison|null>(null);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+ const sequence=useRef(0);const worker=useRef<Worker|null>(null);const rejectCurrent=useRef<((reason:Error)=>void)|null>(null);
+ useEffect(()=>()=>{sequence.current++;worker.current?.terminate();rejectCurrent.current?.(new Error('Cancelled'));},[]);
+ const quality=useMemo(()=>revisionQuality(snapshot,english),[snapshot,english]);const stale=!!snapshot&&snapshot!==source&&english!==source;
+ function stop(){sequence.current++;worker.current?.terminate();rejectCurrent.current?.(new Error('Cancelled'));setBusy(false);onBusyChange(false);setMessage('Cancelled. The original text was kept.');}
+ function loadCurrent(){setSnapshot(source);setChinese('');setEnglish('');setComparison(null);setMessage('Current passage loaded.');}
+ function plain(){try{const draft=clearerEnglish(source);setSnapshot(source);setEnglish(draft);setChinese('');setComparison(null);setMessage('Conservative plain-English edits only. Review meaning before applying; a lower detector score is not guaranteed.');}catch(e){setMessage(String(e));}}
+ async function run(action:TranslationAction|'compare'){
+  const id=++sequence.current;const input=action==='toEnglish'?chinese:action==='compare'?snapshot:source;
+  try{validateRevisionInput(input);if(action==='compare')validateRevisionInput(english);}catch(e){setMessage(String(e));return;}
+  if(action==='toChinese'||action==='roundtrip'){setSnapshot(source);setChinese('');setEnglish('');setComparison(null);}
+  if(action==='toEnglish'){setEnglish('');setComparison(null);if(!snapshot)setSnapshot(source);}
+  setBusy(true);onBusyChange(true);setMessage('Starting local worker. First-use model downloads can take several minutes.');
+  try{
+   const result=await new Promise<RevisionOutput>((resolve,reject)=>{
+    const w=new Worker(new URL('../../lib/scan/revision.worker.ts',import.meta.url),{type:'module'});worker.current=w;rejectCurrent.current=reject;
+    w.onmessage=e=>{if(id!==sequence.current)return;if(e.data.progress){setMessage(e.data.progress);return;}w.terminate();e.data.error?reject(new Error(e.data.error)):resolve(e.data.result);};w.onerror=()=>{w.terminate();reject(new Error('Local revision worker failed. The original was kept.'));};w.postMessage({action,text:input,draft:english});
+   });
+   if(id!==sequence.current)return;
+   if(result.chinese!==undefined)setChinese(result.chinese);if(result.english!==undefined)setEnglish(result.english);if(result.comparison)setComparison(result.comparison);
+   setMessage(result.comparison?'Model comparison complete. A change is not proof of authorship or a prediction of Turnitin.':'Draft ready. Review the English and the quality flags. The original is unchanged.');
+  }catch(e){if(id===sequence.current)setMessage(e instanceof Error?e.message:String(e));}finally{if(id===sequence.current){rejectCurrent.current=null;setBusy(false);onBusyChange(false);}}
+ }
+ async function copy(text:string){try{await navigator.clipboard.writeText(text);setMessage('Copied to clipboard.');}catch{setMessage('Clipboard unavailable. Select the text or download the file.');}}
+ const locked=busy||disabled;
+ return <section className="min-w-0 space-y-4 border-t border-border pt-7 lg:col-span-2">
+  <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-display text-2xl">Translate &amp; revise</h2><span className="font-mono text-xs text-muted">ENGLISH ↔ 繁體中文 · LOCAL</span></div>
+  <p className="text-sm text-muted">Use the text or extracted document above. Translate to Traditional Chinese and back, or make light plain-English edits. No OpenAI, API key or upload. Two translation packs download about 230 MB once; comparing detector scores may download the existing 125 MB detector. Longer reports take time; limit 20,000 characters per pass.</p>
+  <div className="flex flex-wrap gap-2"><Button size="sm" disabled={locked||!source.trim()} onClick={()=>void run('roundtrip')}>English → 繁體中文 → English</Button><Button size="sm" variant="outline" disabled={locked||!source.trim()} onClick={()=>void run('toChinese')}>Translate to 繁體中文</Button><Button size="sm" variant="outline" disabled={locked||!source.trim()} onClick={plain}>Clearer English</Button><Button size="sm" variant="ghost" disabled={locked||!source.trim()} onClick={loadCurrent}>Load current passage</Button>{busy&&<Button size="sm" variant="outline" onClick={stop}>Cancel revision</Button>}</div>
+  <p role="status" className="text-sm text-muted">{message}</p>
+  {stale&&<p className="text-sm text-warn">The passage above changed. This draft belongs to the captured original. Load the current passage before starting a new revision.</p>}
+  {snapshot&&<details className="border border-border p-3 text-xs text-muted"><summary>Captured original English · {quality.sourceWords} words</summary><pre className="mt-3 max-h-60 overflow-auto whitespace-pre-wrap break-words">{snapshot}</pre></details>}
+  <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+   <div className="min-w-0 space-y-3"><label htmlFor="revision-chinese" className="text-sm">繁體中文（香港）</label><textarea id="revision-chinese" lang="zh-Hant" value={chinese} maxLength={20000} disabled={locked} onChange={e=>{setChinese(e.target.value);setEnglish('');setComparison(null);}} className="min-h-72 w-full border border-border bg-bg-elevated p-4 text-sm leading-7"/><div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={locked||!chinese.trim()} onClick={()=>void run('toEnglish')}>Translate back to English</Button><Button size="sm" variant="ghost" disabled={!chinese.trim()} onClick={()=>void copy(chinese)}>Copy Chinese</Button><Button size="sm" variant="ghost" disabled={!chinese.trim()} onClick={()=>downloadBlob(new Blob([chinese],{type:'text/plain;charset=utf-8'}),'tracefield-traditional-chinese.txt')}>Download Chinese</Button></div></div>
+   <div className="min-w-0 space-y-3"><label htmlFor="revision-english" className="text-sm">Revised English · editable draft</label><textarea id="revision-english" lang="en" value={english} maxLength={30000} disabled={locked} onChange={e=>{setEnglish(e.target.value);setComparison(null);}} className="min-h-72 w-full border border-border bg-bg-elevated p-4 text-sm leading-7"/><div className="flex flex-wrap gap-2"><Button size="sm" disabled={locked||!english.trim()||stale} onClick={()=>{onApply(english);setMessage('Revised English placed in the analyzer above. The source file itself was not modified.');}}>Use revised English</Button><Button size="sm" variant="ghost" disabled={!english.trim()} onClick={()=>void copy(english)}>Copy English</Button><Button size="sm" variant="ghost" disabled={!english.trim()} onClick={()=>downloadBlob(new Blob([english],{type:'text/plain;charset=utf-8'}),'tracefield-revised-english.txt')}>Download English</Button></div></div>
+  </div>
+  {english&&<div className="space-y-2 border border-border p-4 text-sm"><p>{quality.sourceWords} original words → {quality.draftWords} revised words</p>{quality.warnings.length?<ul className="list-disc space-y-1 pl-5 text-warn">{quality.warnings.map(w=><li key={w}>{w}</li>)}</ul>:<p className="text-muted">No number, reference, negation or repetition flags found. This does not verify grammar, names or full meaning; read both versions before using the draft.</p>}<Button size="sm" variant="outline" disabled={locked||quality.sourceWords<50||quality.draftWords<50} onClick={()=>void run('compare')}>Compare AI model scores</Button><p className="text-xs text-muted">Comparison needs at least 50 words in each version. Scores can go down or up; lower scores do not prove human authorship. This is not Turnitin, and no score reduction is promised.</p>{comparison&&<p className="font-mono text-sm">Original {comparison.before.toFixed(1)}% → Revised {comparison.after.toFixed(1)}% · {(comparison.after-comparison.before).toFixed(1)} percentage points</p>}<Button size="sm" variant="outline" onClick={()=>downloadJson({kind:'local-translation-revision',original:snapshot,chinese,english,quality,comparison,limitation:'Experimental local translation and detector scores. Meaning and grammar require review; no guaranteed score reduction.'})}>Export revision comparison</Button></div>}
+  <p className="text-xs text-subtle">Built with <a href="https://github.com/Helsinki-NLP/Opus-MT" target="_blank" rel="noreferrer" className="underline">OPUS-MT</a> and <a href="https://github.com/nk2028/opencc-js" target="_blank" rel="noreferrer" className="underline">OpenCC</a>. Plain text is preserved; Word/PDF page formatting is not recreated. Translation can alter meaning and technical terms, so this is a draft editor, not a guaranteed grammar service.</p>
+ </section>;
+}

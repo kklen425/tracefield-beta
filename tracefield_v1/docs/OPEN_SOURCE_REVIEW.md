@@ -28,3 +28,8 @@ TRACEFIELD currently uses original local style-feature code with low confidence,
 React, TanStack, Vite, Nitro, Better Auth, pg, Kysely and PGlite remain npm dependencies. Better Auth handles credential hashing/session persistence; pg serves the existing Neon schema. PGlite is a disposable development/test fallback only. Tailwind, Lucide and the inherited Radix button primitive preserve the original styling; unused UI components are tree-shaken. Alternatives (new framework/auth vendor/database) were rejected to avoid migration risk. Framework and Nitro beta versions require ongoing integration checks; these packages are not forensic evidence engines.
 
 Security audit after compatible brace-expansion updates: **0 npm-reported vulnerabilities** on 2026-10-02. This is a registry advisory check, not proof of complete security. Package-lock pins reviewed resolved versions. Browser raw-file limits and separate workers constrain parser cost; no third-party AI endpoint receives local file/text bytes. Google Fonts remains a stylesheet/font request and receives ordinary request metadata; it can be self-hosted later.
+
+## Local revision update — 2026-11-03
+
+See LOCAL_REVISION.md for OPUS-MT/Xenova model revisions, Apache-2.0 and CC BY 4.0 upstream model attribution, OpenCC MIT/dictionary notices, and actual fidelity/score diagnostics. No OpenAI key was created or used.
+

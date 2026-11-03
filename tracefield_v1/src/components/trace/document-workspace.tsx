@@ -9,6 +9,7 @@ import {usePersonal} from '@/lib/personal/context';
 import {useCurrentUserState} from '@/lib/auth/use-current-user';
 import {downloadJson} from './export';
 import {TurnitinImport} from './turnitin-import';
+import {TranslationWorkspace} from './translation-workspace';
 import type {analyzeWithModel} from '@/lib/scan/text-model';
 type WritingResult=ReturnType<typeof analyzeText> & {model?:Awaited<ReturnType<typeof analyzeWithModel>>['model']};
 
@@ -20,6 +21,7 @@ export function DocumentWorkspace({mode,onUsage}:{mode:'TEXT'|'WORD'|'PDF',onUsa
  const [result,setResult]=useState<WritingResult|null>(null);
  const [analysisId,setAnalysisId]=useState('');
  const [busy,setBusy]=useState(false);
+ const [translationBusy,setTranslationBusy]=useState(false);const locked=busy||translationBusy;
  const [message,setMessage]=useState('');
  const [pages,setPages]=useState<number[]>([]);
  const cancel=useRef<AbortController|null>(null);
@@ -66,13 +68,13 @@ export function DocumentWorkspace({mode,onUsage}:{mode:'TEXT'|'WORD'|'PDF',onUsa
  }
  return <main className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,.92fr)_minmax(0,1.08fr)]">
   <section className="min-w-0 space-y-4">
-   {mode==='PDF'&&<label className="block border border-border bg-bg-elevated p-4 text-sm">Open PDF · selectable text · up to 30 MB<input aria-label="Open PDF" type="file" accept="application/pdf" disabled={busy} className="mt-3 block w-full" onChange={e=>{const f=e.target.files?.[0];if(f)void load(f);}}/></label>}
-   {mode==='WORD'&&<label className="block border border-border bg-bg-elevated p-4 text-sm">Open Word document · DOCX · up to 10 MB<input aria-label="Open Word document" type="file" accept=".docx,.doc" disabled={busy} className="mt-3 block w-full" onChange={e=>{const f=e.target.files?.[0];if(f)void loadWord(f);}}/></label>}
-   {pdf&&<div className="flex flex-wrap gap-2">{pdf.pages.map((_,i)=><label key={i} className="text-xs"><input type="checkbox" checked={pages.includes(i)} disabled={busy} onChange={e=>{const next=e.target.checked?[...pages,i].sort((a,b)=>a-b):pages.filter(n=>n!==i);selection.current='';setResult(null);setPages(next);setText(next.map(n=>pdf.pages[n]).join('\n\n'));}}/> Page {i+1}</label>)}</div>}
+   {mode==='PDF'&&<label className="block border border-border bg-bg-elevated p-4 text-sm">Open PDF · selectable text · up to 30 MB<input aria-label="Open PDF" type="file" accept="application/pdf" disabled={locked} className="mt-3 block w-full" onChange={e=>{const f=e.target.files?.[0];if(f)void load(f);}}/></label>}
+   {mode==='WORD'&&<label className="block border border-border bg-bg-elevated p-4 text-sm">Open Word document · DOCX · up to 10 MB<input aria-label="Open Word document" type="file" accept=".docx,.doc" disabled={locked} className="mt-3 block w-full" onChange={e=>{const f=e.target.files?.[0];if(f)void loadWord(f);}}/></label>}
+   {pdf&&<div className="flex flex-wrap gap-2">{pdf.pages.map((_,i)=><label key={i} className="text-xs"><input type="checkbox" checked={pages.includes(i)} disabled={locked} onChange={e=>{const next=e.target.checked?[...pages,i].sort((a,b)=>a-b):pages.filter(n=>n!==i);selection.current='';setResult(null);setPages(next);setText(next.map(n=>pdf.pages[n]).join('\n\n'));}}/> Page {i+1}</label>)}</div>}
    <label className="block text-sm text-muted" htmlFor="document-text">{mode==='PDF'?'Extracted text / selected passage':'Paste a paragraph, essay or article'}</label>
-   <textarea id="document-text" className="min-h-80 w-full resize-y rounded-md border border-border bg-bg-elevated p-4 text-sm leading-7" maxLength={500000} value={text} disabled={busy} onChange={e=>{selection.current='';setResult(null);setText(e.target.value);}} onSelect={e=>{const t=e.currentTarget;selection.current=t.value.slice(t.selectionStart,t.selectionEnd);}} />
+   <textarea id="document-text" className="min-h-80 w-full resize-y rounded-md border border-border bg-bg-elevated p-4 text-sm leading-7" maxLength={500000} value={text} disabled={locked} onChange={e=>{selection.current='';setResult(null);setText(e.target.value);}} onSelect={e=>{const t=e.currentTarget;selection.current=t.value.slice(t.selectionStart,t.selectionEnd);}} />
    <p className="font-mono text-xs text-muted">{text.trim().match(/\S+/g)?.length??0} words · {text.length} characters</p>
-   <div className="flex flex-wrap gap-2"><Button size="sm" disabled={busy||!text.trim()} onClick={()=>void run('model')}>Analyze AI percentage</Button><Button size="sm" variant="outline" disabled={busy||!text.trim()} onClick={()=>void run('style')}>Quick style analysis</Button><Button size="sm" variant="outline" disabled={busy} onClick={()=>{const value=selection.current;if(value){setResult(null);setText(value);selection.current='';}}}>Use selected paragraph</Button><Button size="sm" variant="ghost" disabled={busy} onClick={()=>{setText('');setResult(null);}}>Clear</Button>{busy&&<Button size="sm" variant="outline" disabled={committing.current} onClick={stop}>Cancel</Button>}</div>
+   <div className="flex flex-wrap gap-2"><Button size="sm" disabled={locked||!text.trim()} onClick={()=>void run('model')}>Analyze AI percentage</Button><Button size="sm" variant="outline" disabled={locked||!text.trim()} onClick={()=>void run('style')}>Quick style analysis</Button><Button size="sm" variant="outline" disabled={locked} onClick={()=>{const value=selection.current;if(value){setResult(null);setText(value);selection.current='';}}}>Use selected paragraph</Button><Button size="sm" variant="ghost" disabled={locked} onClick={()=>{setText('');setResult(null);}}>Clear</Button>{busy&&<Button size="sm" variant="outline" disabled={committing.current} onClick={stop}>Cancel</Button>}</div>
    <p className="text-xs text-muted">AI percentage loads an approximately 125 MB English model from Hugging Face on first use, then runs locally. Minimum 50 words; maximum 50,000 characters. The displayed model score is not the percentage of words authored by AI and does not predict Turnitin. Quick style analysis needs no model download. <a href="https://github.com/fakespot-ai/apollodft" target="_blank" rel="noreferrer" className="text-accent underline">GitHub model research</a></p>
    <p role="status" className="text-sm text-muted">{message}</p><p className="text-xs text-subtle">{personal?'Text and PDF bytes stay in your browser. No account or quota requests are sent.':'Text and PDF bytes stay in your browser. The server receives only a random job ID for quota accounting.'}</p>
    {facts&&<dl className="space-y-2 break-all font-mono text-xs text-muted"><div>{facts.name} · {facts.mime} · {facts.size} bytes {pdf&&` · ${pdf.pages.length} pages`}</div><div>SHA-256 {facts.sha256}</div></dl>}
@@ -83,5 +85,6 @@ export function DocumentWorkspace({mode,onUsage}:{mode:'TEXT'|'WORD'|'PDF',onUsa
    <TurnitinImport/>
    {pdf&&<details className="break-all border border-border p-4 text-xs text-muted"><summary>02 PDF provenance metadata · separate from writing analysis</summary><pre className="mt-3 whitespace-pre-wrap">{JSON.stringify(pdf.info,null,2)}</pre>{pdf.xmp&&<pre className="whitespace-pre-wrap">{pdf.xmp}</pre>}<p>Creator/producer metadata is editable. It does not establish AI authorship. PDF signature validation is not implemented.</p></details>}
   </section>
+ {personal&&<TranslationWorkspace source={text} disabled={busy} onBusyChange={setTranslationBusy} onApply={value=>{setText(value);setResult(null);selection.current='';setMessage('Revised text ready for analysis. Original document bytes are unchanged.');}}/>}
  </main>;
 }

@@ -42,3 +42,9 @@ export function revisionQuality(source:string,draft:string){
  if(draft.trim()===source.trim())warnings.push('The draft is unchanged. No rewriting benefit has been demonstrated.');
  return {warnings,sourceWords:words(source),draftWords:words(draft),changed:source!==draft};
 }
+
+export function selectEnglishDraft(source:string,translated:string,protectMeaning=true){
+ const warnings=source.trim()?revisionQuality(source,translated).warnings:[];
+ const usedFallback=protectMeaning&&!!source.trim()&&warnings.some(w=>!w.startsWith('The draft is unchanged'));
+ return {english:usedFallback?clearerEnglish(source):translated,rawEnglish:translated,warnings,usedFallback};
+}

@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {clearerEnglish,revisionQuality,validateRevisionInput} from './revision-quality.ts';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {clearerEnglish,revisionQuality,validateRevisionInput,selectEnglishDraft} from './revision-quality.ts';
 test('plain English edits preserve numbers, negation, references and paragraph structure',()=>{
  const source='It is important to note that the trial will not collect personal data in 2026 [7].\n\nFurthermore, the team will utilize 24 sensors in order to measure energy use.';
  const result=clearerEnglish(source);assert.equal(result,'The trial will not collect personal data in 2026 [7].\n\nThe team will use 24 sensors to measure energy use.');assert.deepEqual(revisionQuality(source,result).warnings,[]);
@@ -12,4 +12,7 @@ test('revision checks flag changed facts and refuse silent over-limit processing
  assert.equal(revisionQuality(source,source).changed,false);
  const drift=revisionQuality('The trial starts in 2026. The team will report the findings.','The trial began in 2026. The Panel will report the findings.').warnings.join(' ');
  assert.match(drift,/Panel/);assert.match(drift,/timeline/);
+ const original='The trial starts in 2026. The team will not collect data.';const translated='The trial began in 2027. The Panel will collect data.';
+ const selected=selectEnglishDraft(original,translated);assert.equal(selected.usedFallback,true);assert.equal(selected.english,original);assert.equal(selected.rawEnglish,translated);
+ assert.equal(selectEnglishDraft(original,translated,false).english,translated);
 });
